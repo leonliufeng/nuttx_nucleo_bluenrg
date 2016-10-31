@@ -41,7 +41,7 @@
 
 /* Includes ------------------------------------------------------------------*/
 #include <arch/board/drivers/bsp/x-nucleo-idb04a1/stm32_bluenrg_ble.h>
-#include "../middlewares/st/stm32_bluenrg/simplebluenrg_hci/includes/hal_types.h"
+#include <arch/board/middlewares/st/stm32_bluenrg/simplebluenrg_hci/hal_types.h>
 
 void Hal_Write_Serial(const void* data1, const void* data2, int32_t n_bytes1,
                       int32_t n_bytes2);

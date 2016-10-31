@@ -45,20 +45,20 @@
 
 /* Includes ------------------------------------------------------------------*/
 #include "cube_hal.h"
-#include "../middlewares/st/stm32_bluenrg/simplebluenrg_hci/includes/hal_types.h"
-#include "../middlewares/st/stm32_bluenrg/simplebluenrg_hci/includes/bluenrg_gatt_server.h"
-#include "../middlewares/st/stm32_bluenrg/simplebluenrg_hci/includes/bluenrg_gap.h"
+#include <arch/board/middlewares/st/stm32_bluenrg/simplebluenrg_hci/hal_types.h>
+#include <arch/board/middlewares/st/stm32_bluenrg/simplebluenrg_hci/bluenrg_gatt_server.h>
+#include <arch/board/middlewares/st/stm32_bluenrg/simplebluenrg_hci/bluenrg_gap.h>
 #include "string.h"
-#include "../middlewares/st/stm32_bluenrg/simplebluenrg_hci/includes/bluenrg_gap_aci.h"
-#include "../middlewares/st/stm32_bluenrg/simplebluenrg_hci/includes/bluenrg_gatt_aci.h"
-#include "../middlewares/st/stm32_bluenrg/simplebluenrg_hci/includes/hci_const.h"
-#include "../middlewares/st/stm32_bluenrg/simplebluenrg_hci/includes/gp_timer.h"
-#include "../middlewares/st/stm32_bluenrg/simplebluenrg_hci/includes/bluenrg_hal_aci.h"
-#include "../middlewares/st/stm32_bluenrg/simplebluenrg_hci/includes/bluenrg_aci_const.h"   
-#include "../middlewares/st/stm32_bluenrg/simplebluenrg_hci/includes/hci.h"
-#include "../middlewares/st/stm32_bluenrg/simplebluenrg_hci/includes/hal.h"
-#include "../middlewares/st/stm32_bluenrg/simplebluenrg_hci/includes/sm.h"
-#include "../middlewares/st/stm32_bluenrg/simplebluenrg_hci/includes/debug.h"
+#include <arch/board/middlewares/st/stm32_bluenrg/simplebluenrg_hci/bluenrg_gap_aci.h>
+#include <arch/board/middlewares/st/stm32_bluenrg/simplebluenrg_hci/bluenrg_gatt_aci.h>
+#include <arch/board/middlewares/st/stm32_bluenrg/simplebluenrg_hci/hci_const.h>
+#include <arch/board/middlewares/st/stm32_bluenrg/simplebluenrg_hci/gp_timer.h>
+#include <arch/board/middlewares/st/stm32_bluenrg/simplebluenrg_hci/bluenrg_hal_aci.h>
+#include <arch/board/middlewares/st/stm32_bluenrg/simplebluenrg_hci/bluenrg_aci_const.h>
+#include <arch/board/middlewares/st/stm32_bluenrg/simplebluenrg_hci/hci.h>
+#include <arch/board/middlewares/st/stm32_bluenrg/simplebluenrg_hci/hal.h>
+#include <arch/board/middlewares/st/stm32_bluenrg/simplebluenrg_hci/sm.h>
+#include <arch/board/middlewares/st/stm32_bluenrg/simplebluenrg_hci/debug.h>
 
 #include <stdlib.h>
 

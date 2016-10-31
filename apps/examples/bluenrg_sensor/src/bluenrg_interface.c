@@ -38,9 +38,9 @@
 /* Includes ------------------------------------------------------------------*/
 #include "bluenrg_interface.h"
 
-#include "debug.h"
-#include "../middlewares/st/stm32_bluenrg/simplebluenrg_hci/includes/ble_status.h"
-#include "../middlewares/st/stm32_bluenrg/simplebluenrg_hci/includes/hci.h"
+#include <arch/board/middlewares/st/stm32_bluenrg/simplebluenrg_hci/debug.h>
+#include <arch/board/middlewares/st/stm32_bluenrg/simplebluenrg_hci/ble_status.h>
+#include <arch/board/middlewares/st/stm32_bluenrg/simplebluenrg_hci/hci.h>
 #include <arch/board/drivers/bsp/x-nucleo-idb04a1/stm32_bluenrg_ble.h>
 
 extern SPI_HandleTypeDef SpiHandle;

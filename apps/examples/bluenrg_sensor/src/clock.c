@@ -36,7 +36,7 @@
   */
   
 /* Includes ------------------------------------------------------------------*/
-#include "../middlewares/st/stm32_bluenrg/simplebluenrg_hci/includes/ble_clock.h"
+#include <arch/board/middlewares/st/stm32_bluenrg/simplebluenrg_hci/ble_clock.h>
 #include "cube_hal.h"
 
 const uint32_t CLOCK_SECOND = 1000;

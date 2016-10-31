@@ -44,13 +44,13 @@
 
 #include "../include/cube_hal.h"
 
-#include <../middlewares/st/stm32_bluenrg/simplebluenrg_hci/includes/osal.h>
+#include <arch/board/middlewares/st/stm32_bluenrg/simplebluenrg_hci/osal.h>
 #include "../include/sensor_service.h"
-#include "../include/debug.h"
+#include <arch/board/middlewares/st/stm32_bluenrg/simplebluenrg_hci/debug.h>
 
 #include <arch/board/nucleo-f401re.h>
 #include <arch/board/drivers/bsp/x-nucleo-idb04a1/stm32_bluenrg_ble.h>
-#include "../middlewares/st/stm32_bluenrg/simplebluenrg_hci/includes/bluenrg_utils.h"
+#include <arch/board/middlewares/st/stm32_bluenrg/simplebluenrg_hci/bluenrg_utils.h>
 
 /** @addtogroup X-CUBE-BLE1_Applications
  *  @{
