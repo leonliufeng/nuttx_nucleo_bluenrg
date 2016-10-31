@@ -32,11 +32,24 @@
 # POSSIBILITY OF SUCH DAMAGE.
 #
 ############################################################################
-
+-include $(TOPDIR)/.config
 -include $(TOPDIR)/Make.defs
+include $(APPDIR)/Make.defs
+
+# Directories
+BLUENRG_DIR = $(APPDIR)/examples/bluenrg_sensor
+BLUENRG_SRC = $(BLUENRG_DIR)/src
+BLUENRG_INC = $(BLUENRG_DIR)/include
+
+MID_HCI = $(BLUENRG_DIR)/middlewares/st/stm32_bluenrg/simplebluenrg_hci/hci
+MID_HCI_CTL = $(MID_HCI)/controller
+MID_INTF = $(BLUENRG_DIR)/middlewares/st/stm32_bluenrg/interface
+MID_UTIL = $(BLUENRG_DIR)/middlewares/st/stm32_bluenrg/simplebluenrg_hci/utils
+
+MID_HCI_INC = $(BLUENRG_DIR)/middlewares/st/stm32_bluenrg/simplebluenrg_hci/includes
+MID_INTF_INC = $(MID_INTF)
 
 # Bluenrg sensor demo! built-in application info
-
 CONFIG_EXAMPLES_BLUENRG_SENSOR_PRIORITY ?= SCHED_PRIORITY_DEFAULT
 CONFIG_EXAMPLES_BLUENRG_SENSOR_STACKSIZE ?= 2048
 
@@ -44,11 +57,26 @@ APPNAME = bluenrg_sensor
 PRIORITY = $(CONFIG_EXAMPLES_BLUENRG_SENSOR_PRIORITY)
 STACKSIZE = $(CONFIG_EXAMPLES_BLUENRG_SENSOR_STACKSIZE)
 
-# Bluenrg sensor demo! Example
+#CPPFLAGS += $(BLUENRG_MIDDLEWARE)/includes
+#CFLAGS += $(BLUENRG_MIDDLEWARE)/includes
+#CXXFLAGS += $(BLUENRG_MIDDLEWARE)/includes
+CFLAGS += -I$(BLUENRG_INC)
+#CFLAGS += -I$(ARCH_INC)/drivers/stm32f4xx_hal_driver/inc
+#CFLAGS += -I$(ARCH_INC)/drivers/bsp/stm32f4xx-nucleo
+#CFLAGS += -I arch/board/drivers/bsp/x-nucleo-idb04a1
+#CFLAGS += -I$(ARCH_INC)/drivers/cmsis/device/st/stm32f4xx/include
+#CFLAGS += -I$(ARCH_INC)/drivers/cmsis/include
+#CFLAGS += -I$(MID_HCI_INC)
+#CFLAGS += -I$(MID_INTF_INC)
 
-ASRCS =
-CSRCS =
-MAINSRC = bluenrg_sensor_main.c
+#vpath %.h ../middlewares/ST/STM32_BlueNRG/SimpleBlueNRG_HCI/includes
+VPATH = middlewares
+
+# Bluenrg sensor demo! Files 
+ASRCS = 
+CSRCS = src/bluenrg_interface.c src/clock.c src/cube_hal_f4.c src/stm32xx_it.c src/sensor_service.c src/stm32f4xx_hal_msp.c 
+#$(MID_HCI)/hci.c $(MID_HCI_CTL)/bluenrg_gap_aci.c $(MID_HCI_CTL)/bluenrg_gatt_aci.c $(MID_HCI_CTL)/bluenrg_hal_aci.c $(MID_HCI_CTL)/bluenrg_l2cap_aci.c $(MID_HCI_CTL)/bluenrg_utils_small.c $(MID_INTF)/bluenrg_itf_template.c $(MID_UTIL)/gp_timer.c $(MID_UTIL)/ble_list.c $(MID_UTIL)/osal.c
+MAINSRC = src/bluenrg_sensor_main.c
 
 CONFIG_EXAMPLES_BLUENRG_SENSOR_PROGNAME ?= bluenrg_sensor$(EXEEXT)
 PROGNAME = $(CONFIG_EXAMPLES_BLUENRG_SENSOR_PROGNAME)

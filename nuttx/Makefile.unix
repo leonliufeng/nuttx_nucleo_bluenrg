@@ -293,7 +293,7 @@ include/arch/board: include/arch Make.defs include/arch
 	$(Q) $(DIRLINK) $(BOARD_DIR)/include include/arch/board
 
 # Link the configs/<board-name>/src dir to arch/<arch-name>/src/board
-
+	@echo "Leon test echo at nuttx/Makefile.unix!!!"
 $(ARCH_SRC)/board: Make.defs
 	@echo "LN: $(ARCH_SRC)/board to $(BOARD_DIR)/src"
 	$(Q) $(DIRLINK) $(BOARD_DIR)/src $(ARCH_SRC)/board
