@@ -113,6 +113,7 @@ int up_timerisr(int irq, uint32_t *regs)
   sched_process_timer();
 
   /*Leon add for HAL tick PROCESS period*/
+  HAL_IncTick();
   return 0;
 }
 
