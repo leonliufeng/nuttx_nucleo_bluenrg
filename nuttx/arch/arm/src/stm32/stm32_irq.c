@@ -410,7 +410,6 @@ void up_irqinitialize(void)
   irq_attach(STM32_IRQ_DBGMONITOR, stm32_dbgmonitor);
   irq_attach(STM32_IRQ_RESERVED, stm32_reserved);
 #endif
-
   stm32_dumpnvic("initial", NR_IRQS);
 
 #ifndef CONFIG_SUPPRESS_INTERRUPTS

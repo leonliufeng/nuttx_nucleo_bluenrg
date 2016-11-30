@@ -52,6 +52,8 @@
 #include <arch/board/drivers/bsp/x-nucleo-idb04a1/stm32_bluenrg_ble.h>
 #include <arch/board/middlewares/st/stm32_bluenrg/simplebluenrg_hci/bluenrg_utils.h>
 
+#include <arch/board/drivers/stm32f4xx_hal_driver/inc/stm32f4xx_hal_uart.h>
+
 /** @addtogroup X-CUBE-BLE1_Applications
  *  @{
  */
@@ -87,6 +89,7 @@ uint8_t bnrg_expansion_board = IDB04A1; /* at startup, suppose the X-NUCLEO-IDB0
 /**
  * @}
  */
+UART_HandleTypeDef UartHandle;
 
 /** @defgroup MAIN_Private_Function_Prototypes
  * @{
@@ -120,6 +123,31 @@ void User_Process(AxesRaw_t* p_axes);
  * @param  None
  * @retval None
  */
+extern int intCount;
+void BNRG_UART_Init()
+{
+  UartHandle.Instance          = USART2;
+    
+  UartHandle.Init.BaudRate     = 115200;
+  UartHandle.Init.WordLength   = UART_WORDLENGTH_8B;
+  UartHandle.Init.StopBits     = UART_STOPBITS_1;
+  UartHandle.Init.Parity       = UART_PARITY_NONE;
+  UartHandle.Init.HwFlowCtl    = UART_HWCONTROL_RTS_CTS;
+  UartHandle.Init.Mode         = UART_MODE_TX_RX;
+  UartHandle.Init.OverSampling = UART_OVERSAMPLING_16;
+                   
+  if(HAL_UART_Init(&UartHandle) != HAL_OK)
+  {
+     /* Initialization Error */
+     //Error_Handler(); 
+     printf("HAL_UART_INit failed.\n");
+  }
+                    
+  /* Output a message on Hyperterminal using printf function */
+  //printf("\n\r UART Printf Example: retarget the C library printf function to the UART\n\r");
+
+}
+
 #ifdef CONFIG_BUILD_KERNEL
 int main(int argc, FAR char *argv[])
 #else	
@@ -130,12 +158,12 @@ int bluenrg_sensor_main(void)
   uint8_t bdaddr[BDADDR_SIZE];
   uint16_t service_handle, dev_name_char_handle, appearance_char_handle;
   
-  uint8_t  hwVersion;
-  uint16_t fwVersion;
+  uint8_t  hwVersion=0;
+  uint16_t fwVersion=0;
   
   int ret;  
   
-  printf("Leon: enter bluenrg_sensor_main!\n");
+  //printf("##################Leon start test.###############\n");
   /* STM32Cube HAL library initialization:
    *  - Configure the Flash prefetch, Flash preread and Buffer caches
    *  - Systick timer is configured by default as source of time base, but user 
@@ -147,29 +175,33 @@ int bluenrg_sensor_main(void)
    */
   HAL_Init();
   
-#if NEW_SERVICES
+#if 1// NEW_SERVICES
   /* Configure LED2 */
   BSP_LED_Init(LED2); 
 #endif
-  
+  //BSP_LED_Off(LED2);
+
   /* Configure the User Button in GPIO Mode */
   BSP_PB_Init(BUTTON_KEY, BUTTON_MODE_GPIO);
-  
+
   /* Configure the system clock */
   SystemClock_Config();
 
+  //printf("leon test usart set with HAL, first.\n");
+  BNRG_UART_Init();
+  
   /* Initialize the BlueNRG SPI driver */
   BNRG_SPI_Init();
   
   /* Initialize the BlueNRG HCI */
   HCI_Init();
-
+  
   /* Reset BlueNRG hardware */
   BlueNRG_RST();
-    
+  
   /* get the BlueNRG HW and FW versions */
   getBlueNRGVersion(&hwVersion, &fwVersion);
-
+  
   /* 
    * Reset BlueNRG again otherwise we won't
    * be able to change its MAC address.
@@ -178,7 +210,7 @@ int bluenrg_sensor_main(void)
    */
   BlueNRG_RST();
   
-  PRINTF("HWver %d, FWver %d", hwVersion, fwVersion);
+  printf("HWver 0x%x, FWver 0x%x.\n", hwVersion, fwVersion);
   
   if (hwVersion > 0x30) { /* X-NUCLEO-IDB05A1 expansion board is used */
     bnrg_expansion_board = IDB05A1; 
@@ -196,13 +228,18 @@ int bluenrg_sensor_main(void)
   ret = aci_hal_write_config_data(CONFIG_DATA_PUBADDR_OFFSET,
                                   CONFIG_DATA_PUBADDR_LEN,
                                   bdaddr);
+  ret = aci_hal_write_config_data(CONFIG_DATA_PUBADDR_OFFSET,
+                                  CONFIG_DATA_PUBADDR_LEN,
+                                  bdaddr);
+
+
   if(ret){
-    PRINTF("Setting BD_ADDR failed.\n");
+    printf("Setting BD_ADDR failed.\n");
   }
   
   ret = aci_gatt_init();    
   if(ret){
-    PRINTF("GATT_Init failed.\n");
+    printf("GATT_Init failed.\n");
   }
 
   if (bnrg_expansion_board == IDB05A1) {
@@ -213,14 +250,14 @@ int bluenrg_sensor_main(void)
   }
 
   if(ret != BLE_STATUS_SUCCESS){
-    PRINTF("GAP_Init failed.\n");
+    printf("GAP_Init failed.\n");
   }
 
   ret = aci_gatt_update_char_value(service_handle, dev_name_char_handle, 0,
                                    strlen(name), (uint8_t *)name);
 
   if(ret){
-    PRINTF("aci_gatt_update_char_value failed.\n");            
+    printf("aci_gatt_update_char_value failed.\n");            
     while(1);
   }
   
@@ -233,24 +270,23 @@ int bluenrg_sensor_main(void)
                                      123456,
                                      BONDING);
   if (ret == BLE_STATUS_SUCCESS) {
-    PRINTF("BLE Stack Initialized.\n");
+    printf("BLE Stack Initialized successfully.\n");
   }
   
-  PRINTF("SERVER: BLE Stack Initialized\n");
   
   ret = Add_Acc_Service();
   
   if(ret == BLE_STATUS_SUCCESS)
-    PRINTF("Acc service added successfully.\n");
+    printf("Acc service added successfully.\n");
   else
-    PRINTF("Error while adding Acc service.\n");
+    printf("Error while adding Acc service.\n");
   
   ret = Add_Environmental_Sensor_Service();
   
   if(ret == BLE_STATUS_SUCCESS)
-    PRINTF("Environmental Sensor service added successfully.\n");
+    printf("Env Sensor service added successfully.\n");
   else
-    PRINTF("Error while adding Environmental Sensor service.\n");
+    printf("Error while adding Environmental Sensor service.\n");
 
 #if NEW_SERVICES
   /* Instantiate Timer Service with two characteristics:
@@ -278,6 +314,9 @@ int bluenrg_sensor_main(void)
   /* Set output power level */
   ret = aci_hal_set_tx_power_level(1,4);
 
+  printf("User application running......\n");
+  printf("Observe the data(sent by ble module) in your mobile app.\n");
+  printf("......");
   while(1)
   {
     HCI_Process();

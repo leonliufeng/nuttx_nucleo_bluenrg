@@ -36,7 +36,7 @@
 -include $(TOPDIR)/Make.defs
 
 ASRCS =
-CSRCS = stm32_boot.c stm32_spi.c 
+CSRCS = stm32_boot.c stm32_spi.c stm32_bnrg.c
 
 ifeq ($(CONFIG_ARCH_LEDS),y)
 CSRCS += stm32_autoleds.c
@@ -83,7 +83,7 @@ MID_INTF = $(CUR_DIR)/middlewares/st/stm32_bluenrg/interface
 MID_UTIL = $(CUR_DIR)/middlewares/st/stm32_bluenrg/simplebluenrg_hci/utils
 
 
-CSRCS += $(NRG_BSP_4XX)/stm32f4xx_nucleo.c $(NRG_BSP_IDB4A1)/stm32_bluenrg_ble.c $(NRG_CMSIS)/system_stm32f4xx.c $(NRG_HAL)/stm32f4xx_hal.c  $(NRG_HAL)/stm32f4xx_hal_adc.c $(NRG_HAL)/stm32f4xx_hal_adc_ex.c $(NRG_HAL)/stm32f4xx_hal_cortex.c $(NRG_HAL)/stm32f4xx_hal_dma.c $(NRG_HAL)/stm32f4xx_hal_flash.c $(NRG_HAL)/stm32f4xx_hal_flash_ex.c $(NRG_HAL)/stm32f4xx_hal_gpio.c $(NRG_HAL)/stm32f4xx_hal_pwr.c $(NRG_HAL)/stm32f4xx_hal_pwr_ex.c $(NRG_HAL)/stm32f4xx_hal_rcc.c $(NRG_HAL)/stm32f4xx_hal_rcc_ex.c $(NRG_HAL)/stm32f4xx_hal_spi.c $(MID_HCI)/hci.c $(MID_HCI_CTL)/bluenrg_gap_aci.c $(MID_HCI_CTL)/bluenrg_gatt_aci.c $(MID_HCI_CTL)/bluenrg_hal_aci.c $(MID_HCI_CTL)/bluenrg_l2cap_aci.c $(MID_HCI_CTL)/bluenrg_utils_small.c $(MID_INTF)/bluenrg_itf_template.c $(MID_UTIL)/gp_timer.c $(MID_UTIL)/ble_list.c $(MID_UTIL)/osal.c
+CSRCS += $(NRG_BSP_4XX)/stm32f4xx_nucleo.c $(NRG_BSP_IDB4A1)/stm32_bluenrg_ble.c $(NRG_CMSIS)/system_stm32f4xx.c $(NRG_HAL)/stm32f4xx_hal.c  $(NRG_HAL)/stm32f4xx_hal_adc.c $(NRG_HAL)/stm32f4xx_hal_adc_ex.c $(NRG_HAL)/stm32f4xx_hal_cortex.c $(NRG_HAL)/stm32f4xx_hal_dma.c $(NRG_HAL)/stm32f4xx_hal_flash.c $(NRG_HAL)/stm32f4xx_hal_flash_ex.c $(NRG_HAL)/stm32f4xx_hal_gpio.c $(NRG_HAL)/stm32f4xx_hal_pwr.c $(NRG_HAL)/stm32f4xx_hal_pwr_ex.c $(NRG_HAL)/stm32f4xx_hal_rcc.c $(NRG_HAL)/stm32f4xx_hal_rcc_ex.c $(NRG_HAL)/stm32f4xx_hal_msp.c $(NRG_HAL)/stm32f4xx_hal_spi.c $(NRG_HAL)/stm32f4xx_hal_uart.c $(MID_HCI)/hci.c $(MID_HCI_CTL)/bluenrg_gap_aci.c $(MID_HCI_CTL)/bluenrg_gatt_aci.c $(MID_HCI_CTL)/bluenrg_hal_aci.c $(MID_HCI_CTL)/bluenrg_l2cap_aci.c $(MID_HCI_CTL)/bluenrg_utils_small.c $(MID_INTF)/bluenrg_itf_template.c $(MID_UTIL)/gp_timer.c $(MID_UTIL)/ble_list.c $(MID_UTIL)/osal.c
 
 
 CFLAGS += -I ../includes/drivers/stm32f4xx_hal_driver/inc

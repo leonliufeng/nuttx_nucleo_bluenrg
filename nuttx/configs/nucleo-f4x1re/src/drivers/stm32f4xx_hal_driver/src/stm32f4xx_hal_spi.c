@@ -153,7 +153,8 @@
 
 /* Includes ------------------------------------------------------------------*/
 #include <arch/board/drivers/stm32f4xx_hal_driver/inc/stm32f4xx_hal.h>
-
+#include <arch/board/drivers/bsp/stm32f4xx-nucleo/stm32f4xx_nucleo_bluenrg.h>
+//#include <arch/arm/src/stm32/stm32_gpio.h>
 /** @addtogroup STM32F4xx_HAL_Driver
   * @{
   */
@@ -162,7 +163,8 @@
   * @{
   */
 #ifdef HAL_SPI_MODULE_ENABLED
-
+/*#define GPIO_SPI1_BNRG_INT (GPIO_PORTA | GPIO_PIN0 | GPIO_INPUT |\
+                            GPIO_PULLUP | GPIO_EXTI | GPIO_SPEED_50MHz)*/
 /* Private typedef -----------------------------------------------------------*/
 /* Private defines -----------------------------------------------------------*/
 /** @defgroup SPI_Private_Constants SPI Private Constants
@@ -248,6 +250,90 @@ static HAL_StatusTypeDef SPI_CheckFlag_BSY(SPI_HandleTypeDef *hspi, uint32_t Tim
   * @{
   */
 
+
+/**
+ *  * @brief  This function is used for low level initialization of the SPI 
+ *   *         communication with the BlueNRG Expansion Board.
+ *    * @param  hspi: SPI handle.
+ *     * @retval None
+ *      */
+void HAL_SPI_MspInit_Leon(SPI_HandleTypeDef* hspi)
+{
+    GPIO_InitTypeDef GPIO_InitStruct;
+    //printf("%s.\n", __FUNCTION__);
+    if(hspi->Instance==BNRG_SPI_INSTANCE)
+    {
+       /* Enable peripherals clock */
+       //printf("Leon: enter HAL_SPI_MspInit_leon.\n");
+       /* Enable GPIO Ports Clock */  
+       BNRG_SPI_RESET_CLK_ENABLE();
+       BNRG_SPI_SCLK_CLK_ENABLE();
+       BNRG_SPI_MISO_CLK_ENABLE();
+       BNRG_SPI_MOSI_CLK_ENABLE();
+       BNRG_SPI_CS_CLK_ENABLE();
+       BNRG_SPI_IRQ_CLK_ENABLE();
+
+       /* Enable SPI clock */
+       BNRG_SPI_CLK_ENABLE();
+
+       /* Reset */
+       GPIO_InitStruct.Pin = BNRG_SPI_RESET_PIN;
+       GPIO_InitStruct.Mode = BNRG_SPI_RESET_MODE;
+       GPIO_InitStruct.Pull = BNRG_SPI_RESET_PULL;
+       GPIO_InitStruct.Speed = BNRG_SPI_RESET_SPEED;
+       GPIO_InitStruct.Alternate = BNRG_SPI_RESET_ALTERNATE;
+       HAL_GPIO_Init(BNRG_SPI_RESET_PORT, &GPIO_InitStruct); 
+       HAL_GPIO_WritePin(BNRG_SPI_RESET_PORT, BNRG_SPI_RESET_PIN, GPIO_PIN_RESET);   /*Added to avoid spurious interrupt from the BlueNRG */
+
+       /* SCLK */
+       GPIO_InitStruct.Pin = BNRG_SPI_SCLK_PIN;
+       GPIO_InitStruct.Mode = BNRG_SPI_SCLK_MODE;
+       GPIO_InitStruct.Pull = BNRG_SPI_SCLK_PULL;
+       GPIO_InitStruct.Speed = BNRG_SPI_SCLK_SPEED;
+       GPIO_InitStruct.Alternate = BNRG_SPI_SCLK_ALTERNATE;
+       HAL_GPIO_Init(BNRG_SPI_SCLK_PORT, &GPIO_InitStruct); 
+                                                          
+       /* MISO */
+       GPIO_InitStruct.Pin = BNRG_SPI_MISO_PIN;
+       GPIO_InitStruct.Mode = BNRG_SPI_MISO_MODE;
+       GPIO_InitStruct.Pull = BNRG_SPI_MISO_PULL;
+       GPIO_InitStruct.Speed = BNRG_SPI_MISO_SPEED;
+       GPIO_InitStruct.Alternate = BNRG_SPI_MISO_ALTERNATE;
+       HAL_GPIO_Init(BNRG_SPI_MISO_PORT, &GPIO_InitStruct);
+
+       /* MOSI */
+       GPIO_InitStruct.Pin = BNRG_SPI_MOSI_PIN;
+       GPIO_InitStruct.Mode = BNRG_SPI_MOSI_MODE;
+       GPIO_InitStruct.Pull = BNRG_SPI_MOSI_PULL;
+       GPIO_InitStruct.Speed = BNRG_SPI_MOSI_SPEED;
+       GPIO_InitStruct.Alternate = BNRG_SPI_MOSI_ALTERNATE;
+       HAL_GPIO_Init(BNRG_SPI_MOSI_PORT, &GPIO_InitStruct);
+
+       /* NSS/CSN/CS */
+       GPIO_InitStruct.Mode = BNRG_SPI_CS_MODE;
+       GPIO_InitStruct.Pull = BNRG_SPI_CS_PULL;
+       GPIO_InitStruct.Speed = BNRG_SPI_CS_SPEED;
+       GPIO_InitStruct.Alternate = BNRG_SPI_CS_ALTERNATE;
+       HAL_GPIO_Init(BNRG_SPI_CS_PORT, &GPIO_InitStruct);
+       HAL_GPIO_WritePin(BNRG_SPI_CS_PORT, BNRG_SPI_CS_PIN, GPIO_PIN_SET);
+   
+       /* IRQ -- INPUT */
+       GPIO_InitStruct.Pin = BNRG_SPI_IRQ_PIN;
+       GPIO_InitStruct.Mode = BNRG_SPI_IRQ_MODE;
+       GPIO_InitStruct.Pull = BNRG_SPI_IRQ_PULL;
+       GPIO_InitStruct.Speed = BNRG_SPI_IRQ_SPEED;
+       GPIO_InitStruct.Alternate = BNRG_SPI_IRQ_ALTERNATE;
+      // stm32_gpiosetevent(GPIO_SPI1_BNRG_INT, true, false, false, null);
+       HAL_GPIO_Init(BNRG_SPI_IRQ_PORT, &GPIO_InitStruct);
+
+       /* Configure the NVIC for SPI */  
+       HAL_NVIC_SetPriority(BNRG_SPI_EXTI_IRQn, 3, 0);    
+       HAL_NVIC_EnableIRQ(BNRG_SPI_EXTI_IRQn);
+    }
+}
+
+
+
 /**
   * @brief  Initialize the SPI according to the specified parameters
   *         in the SPI_InitTypeDef and initialize the associated handle.
@@ -257,46 +343,63 @@ static HAL_StatusTypeDef SPI_CheckFlag_BSY(SPI_HandleTypeDef *hspi, uint32_t Tim
   */
 HAL_StatusTypeDef HAL_SPI_Init(SPI_HandleTypeDef *hspi)
 {
+  //printf("%s\n", __FUNCTION__);
   /* Check the SPI handle allocation */
   if(hspi == NULL)
   {
     return HAL_ERROR;
   }
-
   /* Check the parameters */
-  assert_param(IS_SPI_ALL_INSTANCE(hspi->Instance));
-  assert_param(IS_SPI_MODE(hspi->Init.Mode));
-  assert_param(IS_SPI_DIRECTION(hspi->Init.Direction));
-  assert_param(IS_SPI_DATASIZE(hspi->Init.DataSize));
-  assert_param(IS_SPI_NSS(hspi->Init.NSS));
-  assert_param(IS_SPI_BAUDRATE_PRESCALER(hspi->Init.BaudRatePrescaler));
-  assert_param(IS_SPI_FIRST_BIT(hspi->Init.FirstBit));
-  assert_param(IS_SPI_TIMODE(hspi->Init.TIMode));
+  /*printf("CheckRst:%d-%d-%d-%d-%d-%d-%d-%d-%d-%d-%d.\n", IS_SPI_ALL_INSTANCE(hspi->Instance),
+           IS_SPI_MODE(hspi->Init.Mode),
+           IS_SPI_DIRECTION(hspi->Init.Direction),
+           IS_SPI_DATASIZE(hspi->Init.DataSize),
+           IS_SPI_NSS(hspi->Init.NSS),
+           IS_SPI_BAUDRATE_PRESCALER(hspi->Init.BaudRatePrescaler),
+           IS_SPI_FIRST_BIT(hspi->Init.FirstBit),
+           IS_SPI_TIMODE(hspi->Init.TIMode),
+           IS_SPI_CPOL(hspi->Init.CLKPolarity),
+           IS_SPI_CPHA(hspi->Init.CLKPhase),
+           IS_SPI_CRC_CALCULATION(hspi->Init.CLKPhase));
+         */ 
+  //assert_param(IS_SPI_ALL_INSTANCE(hspi->Instance));
+  //assert_param(IS_SPI_MODE(hspi->Init.Mode));
+  //assert_param(IS_SPI_DIRECTION(hspi->Init.Direction));
+  //assert_param(IS_SPI_DATASIZE(hspi->Init.DataSize));
+  //assert_param(IS_SPI_NSS(hspi->Init.NSS));
+  //assert_param(IS_SPI_BAUDRATE_PRESCALER(hspi->Init.BaudRatePrescaler));
+  //assert_param(IS_SPI_FIRST_BIT(hspi->Init.FirstBit));
+  //assert_param(IS_SPI_TIMODE(hspi->Init.TIMode));
   if(hspi->Init.TIMode == SPI_TIMODE_DISABLE)
   {
-    assert_param(IS_SPI_CPOL(hspi->Init.CLKPolarity));
-    assert_param(IS_SPI_CPHA(hspi->Init.CLKPhase));
+    //assert_param(IS_SPI_CPOL(hspi->Init.CLKPolarity));
+    //assert_param(IS_SPI_CPHA(hspi->Init.CLKPhase));
   }
 #if (USE_SPI_CRC != 0U)
-  assert_param(IS_SPI_CRC_CALCULATION(hspi->Init.CRCCalculation));
+  //assert_param(IS_SPI_CRC_CALCULATION(hspi->Init.CRCCalculation));
   if(hspi->Init.CRCCalculation == SPI_CRCCALCULATION_ENABLE)
   {
-    assert_param(IS_SPI_CRC_POLYNOMIAL(hspi->Init.CRCPolynomial));
+    //assert_param(IS_SPI_CRC_POLYNOMIAL(hspi->Init.CRCPolynomial));
   }
 #else
   hspi->Init.CRCCalculation = SPI_CRCCALCULATION_DISABLE;
 #endif /* USE_SPI_CRC */
+  //printf("leon check hspi->State()Lock().\n"/*, hspi->State, hspi->Lock*/);
 
   if(hspi->State == HAL_SPI_STATE_RESET)
   {
     /* Allocate lock resource and initialize it */
-    hspi->Lock = HAL_UNLOCKED;
+    hspi->Lock = HAL_UNLOCKED;  
 
     /* Init the low level hardware : GPIO, CLOCK, NVIC... */
+    //printf("Now call HAL_SPI_MspInit.\n");
+    bnrg_enable_irq(true);
     HAL_SPI_MspInit(hspi);
+    //HAL_SPI_MspInit_Leon(hspi);
   }
 
   hspi->State = HAL_SPI_STATE_BUSY;
+  //printf("Leon test 222.\n"); 
 
   /* Disable the selected SPI peripheral */
   __HAL_SPI_DISABLE(hspi);
@@ -374,12 +477,83 @@ HAL_StatusTypeDef HAL_SPI_DeInit(SPI_HandleTypeDef *hspi)
 __weak void HAL_SPI_MspInit(SPI_HandleTypeDef *hspi)
 {
   /* Prevent unused argument(s) compilation warning */
-  UNUSED(hspi);
+  //printf("%s\n", __FUNCTION__);
+  GPIO_InitTypeDef GPIO_InitStruct;
+  if(hspi->Instance==BNRG_SPI_INSTANCE)
+  {
+     /* Enable peripherals clock */
+
+     /* Enable GPIO Ports Clock */  
+     BNRG_SPI_RESET_CLK_ENABLE();
+     BNRG_SPI_SCLK_CLK_ENABLE();
+     BNRG_SPI_MISO_CLK_ENABLE();
+     BNRG_SPI_MOSI_CLK_ENABLE();
+     BNRG_SPI_CS_CLK_ENABLE();
+     BNRG_SPI_IRQ_CLK_ENABLE();
+     /* Enable SPI clock */
+     BNRG_SPI_CLK_ENABLE();
+
+     /* Reset */
+     GPIO_InitStruct.Pin = BNRG_SPI_RESET_PIN;
+     GPIO_InitStruct.Mode = BNRG_SPI_RESET_MODE;
+     GPIO_InitStruct.Pull = BNRG_SPI_RESET_PULL;
+     GPIO_InitStruct.Speed = BNRG_SPI_RESET_SPEED;
+     GPIO_InitStruct.Alternate = BNRG_SPI_RESET_ALTERNATE;
+     HAL_GPIO_Init(BNRG_SPI_RESET_PORT, &GPIO_InitStruct); 
+     HAL_GPIO_WritePin(BNRG_SPI_RESET_PORT, BNRG_SPI_RESET_PIN, GPIO_PIN_RESET);   /*Added to avoid spurious interrupt from the BlueNRG */
+     
+     /* SCLK */
+     GPIO_InitStruct.Pin = BNRG_SPI_SCLK_PIN;
+     GPIO_InitStruct.Mode = BNRG_SPI_SCLK_MODE;
+     GPIO_InitStruct.Pull = BNRG_SPI_SCLK_PULL;
+     GPIO_InitStruct.Speed = BNRG_SPI_SCLK_SPEED;
+     GPIO_InitStruct.Alternate = BNRG_SPI_SCLK_ALTERNATE;
+     HAL_GPIO_Init(BNRG_SPI_SCLK_PORT, &GPIO_InitStruct); 
+                                                                                     /* MISO */
+     GPIO_InitStruct.Pin = BNRG_SPI_MISO_PIN;
+     GPIO_InitStruct.Mode = BNRG_SPI_MISO_MODE;
+     GPIO_InitStruct.Pull = BNRG_SPI_MISO_PULL;
+     GPIO_InitStruct.Speed = BNRG_SPI_MISO_SPEED;
+     GPIO_InitStruct.Alternate = BNRG_SPI_MISO_ALTERNATE;
+     HAL_GPIO_Init(BNRG_SPI_MISO_PORT, &GPIO_InitStruct);
+
+     /* MOSI */
+     GPIO_InitStruct.Pin = BNRG_SPI_MOSI_PIN;
+     GPIO_InitStruct.Mode = BNRG_SPI_MOSI_MODE;
+     GPIO_InitStruct.Pull = BNRG_SPI_MOSI_PULL;
+     GPIO_InitStruct.Speed = BNRG_SPI_MOSI_SPEED;
+     GPIO_InitStruct.Alternate = BNRG_SPI_MOSI_ALTERNATE;
+     HAL_GPIO_Init(BNRG_SPI_MOSI_PORT, &GPIO_InitStruct);
+     
+     /* NSS/CSN/CS */
+     GPIO_InitStruct.Pin = BNRG_SPI_CS_PIN;
+     GPIO_InitStruct.Mode = BNRG_SPI_CS_MODE;
+     GPIO_InitStruct.Pull = BNRG_SPI_CS_PULL;
+     GPIO_InitStruct.Speed = BNRG_SPI_CS_SPEED;
+     GPIO_InitStruct.Alternate = BNRG_SPI_CS_ALTERNATE;
+     HAL_GPIO_Init(BNRG_SPI_CS_PORT, &GPIO_InitStruct);
+     HAL_GPIO_WritePin(BNRG_SPI_CS_PORT, BNRG_SPI_CS_PIN, GPIO_PIN_SET);
+     
+     /* IRQ -- INPUT */
+     GPIO_InitStruct.Pin = BNRG_SPI_IRQ_PIN;
+     GPIO_InitStruct.Mode = BNRG_SPI_IRQ_MODE;
+     GPIO_InitStruct.Pull = BNRG_SPI_IRQ_PULL;
+     GPIO_InitStruct.Speed = BNRG_SPI_IRQ_SPEED;
+     GPIO_InitStruct.Alternate = BNRG_SPI_IRQ_ALTERNATE;
+#if 0 
+     HAL_GPIO_Init(BNRG_SPI_IRQ_PORT, &GPIO_InitStruct);
+#endif
+     /* Configure the NVIC for SPI */  
+     //HAL_NVIC_SetPriority(BNRG_SPI_EXTI_IRQn, 3, 0);    
+     //HAL_NVIC_EnableIRQ(BNRG_SPI_EXTI_IRQn);
+    // bnrg_enable_irq(true);
+  }
+
+  //UNUSED(hspi);
   /* NOTE : This function should not be modified, when the callback is needed,
             the HAL_SPI_MspInit should be implemented in the user file
   */
 }
-
 /**
   * @brief  De-Initialize the SPI MSP.
   * @param  hspi: pointer to a SPI_HandleTypeDef structure that contains
@@ -893,6 +1067,7 @@ HAL_StatusTypeDef HAL_SPI_TransmitReceive(SPI_HandleTypeDef *hspi, uint8_t *pTxD
       {
         hspi->Instance->DR = *((uint16_t *)pTxData);
         pTxData += sizeof(uint16_t);
+     
         hspi->TxXferCount--;
         /* Next Data is a reception (Rx). Tx not allowed */ 
         txallowed = 0U;
@@ -925,12 +1100,14 @@ HAL_StatusTypeDef HAL_SPI_TransmitReceive(SPI_HandleTypeDef *hspi, uint8_t *pTxD
   /* Transmit and Receive data in 8 Bit mode */
   else
   {
+    //printf("enter transmit and recv.\n");
     if((hspi->Init.Mode == SPI_MODE_SLAVE) || (hspi->TxXferCount == 0x01))
     {
       *((__IO uint8_t*)&hspi->Instance->DR) = (*pTxData);
       pTxData += sizeof(uint8_t);
       hspi->TxXferCount--;
     }
+    //printf("DR:(");
     while((hspi->TxXferCount > 0U) || (hspi->RxXferCount > 0U))
     {
       /* check TXE flag */
@@ -955,6 +1132,7 @@ HAL_StatusTypeDef HAL_SPI_TransmitReceive(SPI_HandleTypeDef *hspi, uint8_t *pTxD
       {
         (*(uint8_t *)pRxData++) = hspi->Instance->DR;
         hspi->RxXferCount--;
+        //printf("%x-", hspi->Instance->DR);
         /* Next Data is a Transmission (Tx). Tx is allowed */ 
         txallowed = 1U;
       }
@@ -964,6 +1142,7 @@ HAL_StatusTypeDef HAL_SPI_TransmitReceive(SPI_HandleTypeDef *hspi, uint8_t *pTxD
         goto error;
       }
     }
+    //printf(")");
   }
 
 #if (USE_SPI_CRC != 0U)

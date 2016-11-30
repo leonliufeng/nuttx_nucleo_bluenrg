@@ -152,6 +152,21 @@
     (GPIO_INPUT | GPIO_PULLDOWN | GPIO_SPEED_2MHz | \
      GPIO_PORTB | GPIO_PIN5)
 #endif
+/*leon add these macro, now use INT marco. Note: do not add the GPIO_PULLUP in 
+ * INT func, this will caused the stm32_gpiosetevent function has wrong pin num.
+ * Other macro please check when use it.*/
+#define GPIO_SPI1_BNRG_INT (GPIO_PORTA | GPIO_PIN0 | GPIO_INPUT | \
+                            GPIO_EXTI | GPIO_SPEED_50MHz)
+#define GPIO_SPI1_BNRG_CS  (GPIO_PORTA | GPIO_PIN1 | GPIO_OUTPUT_SET | \
+                            GPIO_OUTPUT | GPIO_PULLUP | GPIO_SPEED_50MHz)
+#define GPIO_SPI1_BNRG_RST (GPIO_PORTA | GPIO_PIN8 | GPIO_OUTPUT | \
+                            GPIO_PULLUP | GPIO_SPEED_2MHz)
+
+#define GPIO_SPI1_BNRG_RST_SET (GPIO_PORTA | GPIO_PIN8 | GPIO_OUTPUT | \
+                                GPIO_PULLUP | GPIO_SPEED_2MHz | GPIO_OUTPUT_SET)
+
+#define GPIO_SPI1_BNRG_RST_CLR (GPIO_PORTA | GPIO_PIN8 | GPIO_OUTPUT | \
+                                GPIO_PULLUP | GPIO_SPEED_2MHz | GPIO_OUTPUT_CLEAR)
 
 /* SPI chip selects */
 

@@ -78,7 +78,7 @@ static int stm32_exti0_isr(int irq, void *context)
   /* Clear the pending interrupt */
 
   putreg32(0x0001, STM32_EXTI_PR);
-
+  //printf("leon: enter stm32_exti0_isr.\n");
   /* And dispatch the interrupt to the handler */
 
   if (stm32_exti_callbacks[0])
@@ -101,7 +101,8 @@ static int stm32_exti1_isr(int irq, void *context)
 
   if (stm32_exti_callbacks[1])
     {
-      ret = stm32_exti_callbacks[1](irq, context);
+    //printf("in stm32_exti1_isr.\n");
+    ret = stm32_exti_callbacks[1](irq, context);
     }
 
   return ret;
@@ -247,7 +248,8 @@ xcpt_t stm32_gpiosetevent(uint32_t pinset, bool risingedge, bool fallingedge,
   int      i;
 
   /* Select the interrupt handler for this EXTI pin */
-
+  //printf("leon: in stm32_gpio_setevent, rising(%b),exti(%x)GPIO_PORTA(%x)GPIO_PIN0(%x)GPIO_INPUT(%x)GPIO_PULLUP(%x)GPIO_EXTI(%x)GPIO_SPEED_50MHz(%x)pinset(%x)pin(%x)PINMASK(%x).\n", risingedge, exti, GPIO_PORTA, GPIO_PIN0, GPIO_INPUT, GPIO_PULLUP, GPIO_EXTI, GPIO_SPEED_50MHz, pinset, pin, GPIO_PIN_MASK);
+  
   if (pin < 5)
     {
       irq        = pin + STM32_IRQ_EXTI0;
@@ -292,14 +294,13 @@ xcpt_t stm32_gpiosetevent(uint32_t pinset, bool risingedge, bool fallingedge,
     }
 
   /* Get the previous GPIO IRQ handler; Save the new IRQ handler. */
-
   oldhandler = stm32_exti_callbacks[pin];
   stm32_exti_callbacks[pin] = func;
-
+  
   /* Install external interrupt handlers */
-
   if (func)
     {
+      //printf("pin(%d)func%x.\n", pin, func);
       irq_attach(irq, handler);
       up_enable_irq(irq);
     }

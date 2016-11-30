@@ -74,7 +74,7 @@ VPATH = middlewares
 
 # Bluenrg sensor demo! Files 
 ASRCS = 
-CSRCS = src/bluenrg_interface.c src/clock.c src/cube_hal_f4.c src/stm32xx_it.c src/sensor_service.c src/stm32f4xx_hal_msp.c 
+CSRCS = src/bluenrg_interface.c src/clock.c src/cube_hal_f4.c  src/sensor_service.c src/stm32f4xx_hal_msp.c 
 #$(MID_HCI)/hci.c $(MID_HCI_CTL)/bluenrg_gap_aci.c $(MID_HCI_CTL)/bluenrg_gatt_aci.c $(MID_HCI_CTL)/bluenrg_hal_aci.c $(MID_HCI_CTL)/bluenrg_l2cap_aci.c $(MID_HCI_CTL)/bluenrg_utils_small.c $(MID_INTF)/bluenrg_itf_template.c $(MID_UTIL)/gp_timer.c $(MID_UTIL)/ble_list.c $(MID_UTIL)/osal.c
 MAINSRC = src/bluenrg_sensor_main.c
 

@@ -154,7 +154,7 @@
   */ 
 
 /* Includes ------------------------------------------------------------------*/
-#include "stm32f4xx_hal.h"
+#include <arch/board/drivers/stm32f4xx_hal_driver/inc/stm32f4xx_hal.h>
 
 /** @addtogroup STM32F4xx_HAL_Driver
   * @{

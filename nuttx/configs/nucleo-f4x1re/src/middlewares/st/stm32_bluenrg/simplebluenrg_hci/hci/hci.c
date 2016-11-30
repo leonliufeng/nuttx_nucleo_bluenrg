@@ -27,7 +27,7 @@
 #include <arch/board/drivers/bsp/x-nucleo-idb04a1/stm32_bluenrg_ble.h>
 
 extern SPI_HandleTypeDef SpiHandle;
-
+int intCount = 0;
 #if BLE_CONFIG_DBG_ENABLE
 #define PRINTF(...) printf(__VA_ARGS__)
 #else
@@ -58,7 +58,8 @@ void hci_timeout_callback(void)
 void HCI_Init(void)
 {
   uint8_t index;
-  
+ 
+  //printf("%s\n", __FUNCTION__);
   /* Initialize list heads of ready and free hci data packet queues */
   list_init_head (&hciReadPktPool);
   list_init_head (&hciReadPktRxQueue);
@@ -119,11 +120,47 @@ BOOL HCI_Queue_Empty(void)
   return list_is_empty(&hciReadPktRxQueue);
 }
 
+void HCI_Isr2(void)
+{
+  //printf("%s\n", __FUNCTION__);
+
+  tHciDataPacket * hciReadPacket = NULL;
+  uint8_t data_len;
+  Clear_SPI_EXTI_Flag();
+  while(BlueNRG_DataPresent()){        
+    if (list_is_empty (&hciReadPktPool) == FALSE){
+      
+      /* enqueueing a packet for read */
+      list_remove_head (&hciReadPktPool, (tListNode **)&hciReadPacket);
+      
+      data_len = BlueNRG_SPI_Read_All(&SpiHandle, hciReadPacket->dataBuff, HCI_READ_PACKET_SIZE);
+      if(data_len > 0){                    
+        hciReadPacket->data_len = data_len;
+        if(HCI_verify(hciReadPacket) == 0)
+          list_insert_tail(&hciReadPktRxQueue, (tListNode *)hciReadPacket);
+        else
+          list_insert_head(&hciReadPktPool, (tListNode *)hciReadPacket);          
+      }
+      else {
+        // Insert the packet back into the pool.
+        list_insert_head(&hciReadPktPool, (tListNode *)hciReadPacket);
+      }
+      
+    }
+    else{
+      // HCI Read Packet Pool is empty, wait for a free packet.
+      Clear_SPI_EXTI_Flag();
+      return;
+    }
+    
+    Clear_SPI_EXTI_Flag();
+  }
+}
 void HCI_Isr(void)
 {
   tHciDataPacket * hciReadPacket = NULL;
   uint8_t data_len;
-  
+  //printf("%s\n", __FUNCTION__);  
   Clear_SPI_EXTI_Flag();
   while(BlueNRG_DataPresent()){        
     if (list_is_empty (&hciReadPktPool) == FALSE){
@@ -157,12 +194,13 @@ void HCI_Isr(void)
 
 void hci_write(const void* data1, const void* data2, uint8_t n_bytes1, uint8_t n_bytes2){
 #if  HCI_LOG_ON
-  PRINTF("HCI <- ");
-  for(int i=0; i < n_bytes1; i++)
-    PRINTF("%02X ", *((uint8_t*)data1 + i));
-  for(int i=0; i < n_bytes2; i++)
-    PRINTF("%02X ", *((uint8_t*)data2 + i));
-  PRINTF("\n");    
+  int i = 0;
+  printf("HCI <- ");
+  for( i=0; i < n_bytes1; i++)
+    printf("%02X ", *((uint8_t*)data1 + i));
+  for( i=0; i < n_bytes2; i++)
+    printf("%02X ", *((uint8_t*)data2 + i));
+  printf("\n");    
 #endif
   
   Hal_Write_Serial(data1, data2, n_bytes1, n_bytes2);
@@ -212,6 +250,7 @@ static void free_event_list(void)
 
 int hci_send_req(struct hci_request *r, BOOL async)
 {
+  //printf("%s\n", __FUNCTION__);
   uint8_t *ptr;
   uint16_t opcode = htobs(cmd_opcode_pack(r->ogf, r->ocf));
   hci_event_pckt *event_pckt;
@@ -220,7 +259,8 @@ int hci_send_req(struct hci_request *r, BOOL async)
   struct timer t;
   tHciDataPacket * hciReadPacket = NULL;
   tListNode hciTempQueue;
-  
+  uint32_t i = 0;
+
   list_init_head(&hciTempQueue);
 
   free_event_list();
@@ -242,7 +282,6 @@ int hci_send_req(struct hci_request *r, BOOL async)
     evt_cmd_status *cs;
     evt_le_meta_event *me;
     int len;
-      
 #if ENABLE_MICRO_SLEEP    
     while(1){
       ATOMIC_SECTION_BEGIN();
@@ -260,10 +299,13 @@ int hci_send_req(struct hci_request *r, BOOL async)
 #else
     while(1){
       if(Timer_Expired(&t)){
+        //printf("Timer_Expired case.\n");      
         goto failed;
       }
+      
       if(!HCI_Queue_Empty()){
-        break;
+          //printf("!HCI_QueueEmpty case.\n");
+          break;
       }
     }
 #endif
@@ -273,6 +315,8 @@ int hci_send_req(struct hci_request *r, BOOL async)
     list_remove_head(&hciReadPktRxQueue, (tListNode **)&hciReadPacket);    
     
     hci_hdr = (void *)hciReadPacket->dataBuff;
+    /*printf("===hci_hdr->type(%x),d0-5(%x-%x-%x-%x-%x-%x)",                                         hci_hdr->type, hci_hdr->data[0], hci_hdr->data[1],                          hci_hdr->data[2], hci_hdr->data[3], hci_hdr->data[4], hci_hdr->data[5]);
+    */
 
     if(hci_hdr->type == HCI_EVENT_PKT){
     
@@ -280,7 +324,12 @@ int hci_send_req(struct hci_request *r, BOOL async)
     
     ptr = hciReadPacket->dataBuff + (1 + HCI_EVENT_HDR_SIZE);
     len = hciReadPacket->data_len - (1 + HCI_EVENT_HDR_SIZE);
-    
+    /*printf("evt(%x)ptr[%d](", event_pckt->evt, len);
+    for (i=0;i<len;i++)
+        printf("%x-", ptr[i]);
+    printf(")\n");
+    */
+
     switch (event_pckt->evt) {
       
     case EVT_CMD_STATUS:
@@ -416,6 +465,7 @@ int hci_disconnect(uint16_t	handle, uint8_t reason)
 int hci_le_read_local_version(uint8_t *hci_version, uint16_t *hci_revision, uint8_t *lmp_pal_version, 
                               uint16_t *manufacturer_name, uint16_t *lmp_pal_subversion)
 {
+  //printf("%s\n", __FUNCTION__);
   struct hci_request rq;
   read_local_version_rp resp;
   
@@ -430,9 +480,13 @@ int hci_le_read_local_version(uint8_t *hci_version, uint16_t *hci_revision, uint
   rq.rlen = READ_LOCAL_VERSION_RP_SIZE;
   
   if (hci_send_req(&rq, FALSE) < 0)
-    return BLE_STATUS_TIMEOUT;
+  {
+      //printf("hci_send_req<0 case.\n");
+      return BLE_STATUS_TIMEOUT;
+  }
   
   if (resp.status) {
+    //printf("resp.status case.\n");      
     return resp.status;
   }
   

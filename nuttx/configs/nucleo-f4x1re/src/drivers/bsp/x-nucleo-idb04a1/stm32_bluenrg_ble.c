@@ -157,13 +157,15 @@ void Hal_Write_Serial(const void* data1, const void* data2, int32_t n_bytes1,
 	 }
   PRINT_CSV("\n");
 #endif
-
+  //printf("c1k%d.",Clock_Time());
   while(1){
     if(BlueNRG_SPI_Write(&SpiHandle, (uint8_t *)data1,(uint8_t *)data2, n_bytes1, n_bytes2)==0) break;
     if(Timer_Expired(&t)){
       break;
     }
+    //printf("c2k%d.",Clock_Time());
   }
+  //printf("c3k%d!", Clock_Time());
 #endif /* OPTIMIZED_SPI */
 }
 
@@ -175,6 +177,7 @@ void Hal_Write_Serial(const void* data1, const void* data2, int32_t n_bytes1,
  */
 void BNRG_SPI_Init(void)
 {
+  //printf("%s\n", __FUNCTION__);
   SpiHandle.Instance = BNRG_SPI_INSTANCE;
   SpiHandle.Init.Mode = BNRG_SPI_MODE;
   SpiHandle.Init.Direction = BNRG_SPI_DIRECTION;
@@ -187,7 +190,6 @@ void BNRG_SPI_Init(void)
   SpiHandle.Init.CRCPolynomial = BNRG_SPI_CRCPOLYNOMIAL;
   SpiHandle.Init.BaudRatePrescaler = BNRG_SPI_BAUDRATEPRESCALER;
   SpiHandle.Init.CRCCalculation = BNRG_SPI_CRCCALCULATION;
-  
   HAL_SPI_Init(&SpiHandle);
 	
 #ifdef OPTIMIZED_SPI /* used by the server (L0 and F4, not L4) for the throughput test */
@@ -205,6 +207,7 @@ void BNRG_SPI_Init(void)
  */
 void BlueNRG_RST(void)
 {
+  //printf("%s\n", __FUNCTION__);
   HAL_GPIO_WritePin(BNRG_SPI_RESET_PORT, BNRG_SPI_RESET_PIN, GPIO_PIN_RESET);
   HAL_Delay(5);
   HAL_GPIO_WritePin(BNRG_SPI_RESET_PORT, BNRG_SPI_RESET_PIN, GPIO_PIN_SET);

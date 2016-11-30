@@ -257,6 +257,7 @@ void HAL_GPIO_Init(GPIO_TypeDef  *GPIOx, GPIO_InitTypeDef *GPIO_Init)
       /* Configure the External Interrupt or event for the current IO */
       if((GPIO_Init->Mode & EXTI_MODE) == EXTI_MODE)
       {
+        //printf("leon: mode(%x).\n", GPIO_Init->Mode);
         /* Enable SYSCFG Clock */
         __HAL_RCC_SYSCFG_CLK_ENABLE();
 
@@ -264,7 +265,11 @@ void HAL_GPIO_Init(GPIO_TypeDef  *GPIOx, GPIO_InitTypeDef *GPIO_Init)
         temp &= ~(((uint32_t)0x0FU) << (4U * (position & 0x03U)));
         temp |= ((uint32_t)(GPIO_GET_INDEX(GPIOx)) << (4U * (position & 0x03U)));
         SYSCFG->EXTICR[position >> 2U] = temp;
-
+        //printf("leon test aaa.\n");
+        /*leon comment out below code. Because the IRQ already handled by Nuttx.
+         * stm32_gpiosetevent function will set realted reg.
+         */
+#if 0
         /* Clear EXTI line configuration */
         temp = EXTI->IMR;
         temp &= ~((uint32_t)iocurrent);
@@ -273,7 +278,7 @@ void HAL_GPIO_Init(GPIO_TypeDef  *GPIOx, GPIO_InitTypeDef *GPIO_Init)
           temp |= iocurrent;
         }
         EXTI->IMR = temp;
-
+        //printf("leon test bbb.\n");
         temp = EXTI->EMR;
         temp &= ~((uint32_t)iocurrent);
         if((GPIO_Init->Mode & GPIO_MODE_EVT) == GPIO_MODE_EVT)
@@ -281,7 +286,7 @@ void HAL_GPIO_Init(GPIO_TypeDef  *GPIOx, GPIO_InitTypeDef *GPIO_Init)
           temp |= iocurrent;
         }
         EXTI->EMR = temp;
-
+        //printf("leon test ccc.\n");
         /* Clear Rising Falling edge configuration */
         temp = EXTI->RTSR;
         temp &= ~((uint32_t)iocurrent);
@@ -290,7 +295,7 @@ void HAL_GPIO_Init(GPIO_TypeDef  *GPIOx, GPIO_InitTypeDef *GPIO_Init)
           temp |= iocurrent;
         }
         EXTI->RTSR = temp;
-
+        //printf("leon test ddd.\n");
         temp = EXTI->FTSR;
         temp &= ~((uint32_t)iocurrent);
         if((GPIO_Init->Mode & FALLING_EDGE) == FALLING_EDGE)
@@ -298,6 +303,8 @@ void HAL_GPIO_Init(GPIO_TypeDef  *GPIOx, GPIO_InitTypeDef *GPIO_Init)
           temp |= iocurrent;
         }
         EXTI->FTSR = temp;
+#endif
+        //printf("leon test eee.\n");
       }
     }
   }
@@ -505,7 +512,9 @@ HAL_StatusTypeDef HAL_GPIO_LockPin(GPIO_TypeDef* GPIOx, uint16_t GPIO_Pin)
 void HAL_GPIO_EXTI_IRQHandler(uint16_t GPIO_Pin)
 {
   /* EXTI line interrupt detected */
-  if(__HAL_GPIO_EXTI_GET_IT(GPIO_Pin) != RESET)
+  //if(__HAL_GPIO_EXTI_GET_IT(GPIO_Pin) != RESET)
+  /*leon: nuttx has already help to dispatch this irq, no need to check this reg    if check, it will be zero. Can't reach the Callback function. Do not check here.
+   */
   {
     __HAL_GPIO_EXTI_CLEAR_IT(GPIO_Pin);
     HAL_GPIO_EXTI_Callback(GPIO_Pin);
@@ -519,11 +528,18 @@ void HAL_GPIO_EXTI_IRQHandler(uint16_t GPIO_Pin)
   */
 __weak void HAL_GPIO_EXTI_Callback(uint16_t GPIO_Pin)
 {
-  /* Prevent unused argument(s) compilation warning */
-  UNUSED(GPIO_Pin);
-  /* NOTE: This function Should not be modified, when the callback is needed,
+    /* Prevent unused argument(s) compilation warning */
+    //printf("%s.\n", __FUNCTION__);
+    HCI_Isr2();
+    /*leon: in pure cube case, will call user specific same name function.
+     * but in nuttx, can't reach the specific func, so move the logic to
+     * this weak function. 
+     */
+
+    //UNUSED(GPIO_Pin);
+    /* NOTE: This function Should not be modified, when the callback is needed,
            the HAL_GPIO_EXTI_Callback could be implemented in the user file
-   */
+     */
 }
 
 /**

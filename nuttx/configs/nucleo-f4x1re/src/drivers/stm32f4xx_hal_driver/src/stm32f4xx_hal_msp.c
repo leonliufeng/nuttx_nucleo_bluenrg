@@ -71,7 +71,7 @@
 void HAL_SPI_MspInit(SPI_HandleTypeDef* hspi)
 {
   GPIO_InitTypeDef GPIO_InitStruct;
-  //printf("Leon test 333. in HAL_SPI_MspInit.\n");
+  //printf("Leon test 666, . in HAL_SPI_MspInit under drivers/bsp/stm32f4xx_hal_driver/.\n");
   if(hspi->Instance==BNRG_SPI_INSTANCE)
   {
     /* Enable peripherals clock */
